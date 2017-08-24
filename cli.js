@@ -1,6 +1,5 @@
 function getResourceName (recordDetails) {
-  return `${recordDetails.name.replace(new RegExp('\\.', 'g'), '_')}_${recordDetails.type}_\
-${recordDetails.content.replace(new RegExp('\\.', 'g'), '_')}`
+  return `${recordDetails.name.replace(new RegExp('\\.', 'g'), '_')}_${recordDetails.type}_${recordDetails.id}`
 }
 
 function formatAsTf (records) {
@@ -10,13 +9,18 @@ function formatAsTf (records) {
       }
     }
   }
-  for (let recordDetails of records.result) {
+  for (let recordDetails of records) {
     const tfDetails = {
       'domain': recordDetails.zone_name,
-      'name': recordDetails.name,
       'value': recordDetails.content,
       'type': recordDetails.type,
       'proxied': recordDetails.proxied
+    }
+
+    if (recordDetails.name === recordDetails.zone_name) {
+      tfDetails['name'] = '@'
+    } else {
+      tfDetails['name'] = recordDetails.name.replace(new RegExp(`.${recordDetails.zone_name}$$`), '')
     }
     if (recordDetails.hasOwnProperty('priority')) {
       tfDetails['priority'] = recordDetails.priority
@@ -44,7 +48,7 @@ function formatAsTfstate (records) {
       }
     ]
   }
-  for (let recordDetails of records.result) {
+  for (let recordDetails of records) {
     const tfstateDetails = {
       'type': 'cloudflare_record',
       'depends_on': [],
@@ -53,7 +57,7 @@ function formatAsTfstate (records) {
         'attributes': {
           'domain': recordDetails.zone_name,
           'id': recordDetails.id,
-          'name': recordDetails.name,
+          'hostname': recordDetails.name,
           'priority': '0',
           'proxied': recordDetails.proxied.toString(),
           'ttl': recordDetails.ttl.toString(),
@@ -73,9 +77,9 @@ function formatAsTfstate (records) {
       tfstateDetails['primary']['attributes']['priority'] = recordDetails.priority.toString()
     }
     if (recordDetails.name === recordDetails.zone_name) {
-      tfstateDetails['primary']['attributes']['hostname'] = recordDetails.name
+      tfstateDetails['primary']['attributes']['name'] = '@'
     } else {
-      tfstateDetails['primary']['attributes']['hostname'] = `${recordDetails.name}.${recordDetails.zone_name}`
+      tfstateDetails['primary']['attributes']['name'] = recordDetails.name.replace(new RegExp(`.${recordDetails.zone_name}$$`), '')
     }
     output['modules'][0]['resources'][`cloudflare_record.${getResourceName(recordDetails)}`] = tfstateDetails
   }
@@ -100,7 +104,12 @@ require('yargs') // eslint-disable-line
     cf.zones.browse().then(function (zones) {
       for (let zoneDetails of zones.result) {
         if (!argv.zone || zoneDetails.name === argv.zone) {
-          cf.dnsRecords.browse(zoneDetails.id).then(function (records) {
+          cf.dnsRecords.browse(zoneDetails.id).then(async function (firstPage) {
+            let records = firstPage.result
+            for (let i = 2; i <= firstPage.result_info.total_pages; i++) {
+              const page = await cf.dnsRecords.browse(zoneDetails.id, {'page': i})
+              records = records.concat(page.result)
+            }
             if (argv.tfstate) {
               console.log(JSON.stringify(formatAsTfstate(records), null, 4))
             } else {
