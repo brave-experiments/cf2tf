@@ -1,0 +1,30 @@
+{
+  "name": "cf2tf",
+  "version": "0.0.1",
+  "description": "A Terraform importer for Cloudflare resources inspired by terraforming",
+  "main": "cli.js",
+  "scripts": {
+    "lint": "standard",
+    "test": "standard"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/brave/cf2tf"
+  },
+  "author": "devops@brave.com",
+  "license": "",
+  "bin": {
+    "cf2tf": "./bin/cf2tf"
+  },
+  "bugs": {
+    "url": "https://github.com/brave/cf2tf/issues"
+  },
+  "homepage": "https://github.com/brave/cf2tf",
+  "dependencies": {
+    "cloudflare": "^2.1.1",
+    "yargs": "^8.0.2"
+  },
+  "devDependencies": {
+    "standard": "^10.0.3"
+  }
+}
