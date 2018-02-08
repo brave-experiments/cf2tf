@@ -1,6 +1,6 @@
 {
-  "name": "cf2tf",
-  "version": "0.0.1",
+  "name": "@brave/cf2tf",
+  "version": "1.0.0",
   "description": "A Terraform importer for Cloudflare resources inspired by terraforming",
   "main": "cli.js",
   "scripts": {
@@ -12,7 +12,7 @@
     "url": "https://github.com/brave/cf2tf"
   },
   "author": "devops@brave.com",
-  "license": "",
+  "license": "MPL-2.0",
   "bin": {
     "cf2tf": "./bin/cf2tf"
   },
