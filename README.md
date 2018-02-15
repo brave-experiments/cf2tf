@@ -4,8 +4,7 @@ A Terraform importer for Cloudflare resources inspired by [terraforming](https:/
 
 ## Installation
 ```
-git clone https://github.com/brave/cf2tf
-npm install -g
+npm install -g git+https://github.com/brave/cf2tf
 ```
 ## Prerequisites
 You must export your Cloudflare credentials:
