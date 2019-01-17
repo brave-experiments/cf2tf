@@ -92,6 +92,10 @@ require('yargs') // eslint-disable-line
       describe: 'limit to a particular zone by name',
       default: ''
     })
+    yargs.option('per_page', {
+      describe: 'set number of records per page',
+      default: '20'
+    })
   }, (argv) => {
     if (!(process.env.CLOUDFLARE_EMAIL && process.env.CLOUDFLARE_TOKEN)) {
       console.log('You must define both CLOUDFLARE_EMAIL and CLOUDFLARE_TOKEN as env vars')
@@ -101,7 +105,7 @@ require('yargs') // eslint-disable-line
       email: process.env.CLOUDFLARE_EMAIL,
       key: process.env.CLOUDFLARE_TOKEN
     })
-    cf.zones.browse().then(function (zones) {
+    cf.zones.browse(params = {'per_page':argv.per_page}).then(function (zones) {
       for (let zoneDetails of zones.result) {
         if (!argv.zone || zoneDetails.name === argv.zone) {
           cf.dnsRecords.browse(zoneDetails.id).then(async function (firstPage) {
